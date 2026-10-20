@@ -1,49 +1,18 @@
-# Java
+# Build output
 backend-java/target/
-backend-java/.mvn/
-backend-java/mvnw
-backend-java/mvnw.cmd
-*.class
-*.jar
-*.war
-*.ear
-*.log
-
-# Python (old files if any remain)
-backend/__pycache__/
-backend/venv_airwatch/
-*.pyc
-*.pyo
-*.pyd
-__pycache__/
-
-# React
-frontend-simple/node_modules/
-frontend-simple/dist/
-frontend-simple/build/
-.DS_Store
-*.log
-npm-debug.log*
-
-# Old frontend
 frontend/node_modules/
 frontend/dist/
+
+# Logs
+*.log
 
 # IDE
 .vscode/
 .idea/
-*.iml
-.cursor/
-.kiro/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Environment
 .env
-.env.local
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Logs
-*.log
-debug*.log
