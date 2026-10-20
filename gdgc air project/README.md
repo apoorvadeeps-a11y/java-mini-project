@@ -15,6 +15,8 @@ in their area. The reports are saved in MySQL and listed back to the user.
 - Submit a pollution report (description, location name, latitude, longitude, severity 1-5)
 - "Get Location" button that reads the browser's current coordinates
 - View your own reports with their status (PENDING / VERIFIED / RESOLVED)
+- Air Quality page that lists all reports with the average severity
+- Alerts page that shows only the severity 4 and 5 reports
 
 ## Project Structure
 

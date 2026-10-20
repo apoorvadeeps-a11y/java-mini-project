@@ -3,10 +3,33 @@ import './App.css';
 
 const API_BASE = 'http://localhost:8080/api';
 
+// One card in the report lists
+function ReportCard({ report }) {
+  return (
+    <div className="report-card">
+      <div className="report-header">
+        <span className={`severity severity-${report.severity}`}>
+          Severity: {report.severity}/5
+        </span>
+        <span className={`status status-${report.status.toLowerCase()}`}>
+          {report.status}
+        </span>
+      </div>
+      <h3>{report.locationName}</h3>
+      <p>{report.description}</p>
+      <div className="report-meta">
+        <span>📍 {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}</span>
+        <span>📅 {new Date(report.createdAt).toLocaleString()}</span>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
+  const [allReports, setAllReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Form states
@@ -38,6 +61,12 @@ function App() {
       fetchReports();
     }
   }, [user, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'airquality' || activeTab === 'alerts') {
+      fetchAllReports();
+    }
+  }, [activeTab]);
 
   // Login function
   const handleLogin = async (e) => {
@@ -137,6 +166,19 @@ function App() {
     setLoading(false);
   };
 
+  // Fetch every report (used by the Air Quality and Alerts pages)
+  const fetchAllReports = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/reports`);
+      const data = await response.json();
+      setAllReports(data);
+    } catch (error) {
+      console.error('Fetch all reports error:', error);
+    }
+    setLoading(false);
+  };
+
   // Logout
   const handleLogout = () => {
     setUser(null);
@@ -166,6 +208,21 @@ function App() {
     }
   };
 
+  // Used by the "Report Pollution" card on the home page
+  const goToReport = () => {
+    if (user) {
+      setActiveTab('submit');
+    } else {
+      alert('Please login first to report pollution');
+      setActiveTab('login');
+    }
+  };
+
+  const alerts = allReports.filter((report) => report.severity >= 4);
+  const averageSeverity = allReports.length
+    ? (allReports.reduce((sum, report) => sum + report.severity, 0) / allReports.length).toFixed(1)
+    : '0.0';
+
   return (
     <div className="app">
       {/* Header */}
@@ -184,6 +241,12 @@ function App() {
       <nav className="nav">
         <button onClick={() => setActiveTab('home')} className={activeTab === 'home' ? 'active' : ''}>
           Home
+        </button>
+        <button onClick={() => setActiveTab('airquality')} className={activeTab === 'airquality' ? 'active' : ''}>
+          Air Quality
+        </button>
+        <button onClick={() => setActiveTab('alerts')} className={activeTab === 'alerts' ? 'active' : ''}>
+          Alerts
         </button>
         {!user ? (
           <>
@@ -214,18 +277,18 @@ function App() {
             <h2>Welcome to AirWatch</h2>
             <p>A citizen-powered air quality monitoring platform.</p>
             <div className="features">
-              <div className="feature-card">
+              <button className="feature-card" onClick={goToReport}>
                 <h3>📍 Report Pollution</h3>
-                <p>Submit pollution reports in your area</p>
-              </div>
-              <div className="feature-card">
+                <p>Submit a pollution report in your area</p>
+              </button>
+              <button className="feature-card" onClick={() => setActiveTab('airquality')}>
                 <h3>📊 Track Air Quality</h3>
-                <p>Monitor AQI data in real-time</p>
-              </div>
-              <div className="feature-card">
+                <p>See all reports and the average severity</p>
+              </button>
+              <button className="feature-card" onClick={() => setActiveTab('alerts')}>
                 <h3>🚨 Get Alerts</h3>
-                <p>Receive notifications about nearby pollution</p>
-              </div>
+                <p>Reports marked severity 4 or 5</p>
+              </button>
             </div>
           </div>
         )}
@@ -372,22 +435,51 @@ function App() {
             ) : (
               <div className="reports-list">
                 {reports.map((report) => (
-                  <div key={report.id} className="report-card">
-                    <div className="report-header">
-                      <span className={`severity severity-${report.severity}`}>
-                        Severity: {report.severity}/5
-                      </span>
-                      <span className={`status status-${report.status.toLowerCase()}`}>
-                        {report.status}
-                      </span>
-                    </div>
-                    <h3>{report.locationName}</h3>
-                    <p>{report.description}</p>
-                    <div className="report-meta">
-                      <span>📍 {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}</span>
-                      <span>📅 {new Date(report.createdAt).toLocaleString()}</span>
-                    </div>
-                  </div>
+                  <ReportCard key={report.id} report={report} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Air Quality Tab */}
+        {activeTab === 'airquality' && (
+          <div className="tab-content">
+            <h2>Air Quality</h2>
+            <p>Every pollution report submitted by users.</p>
+            {loading ? (
+              <p>Loading...</p>
+            ) : allReports.length === 0 ? (
+              <p>No reports yet. Be the first to report pollution!</p>
+            ) : (
+              <>
+                <div className="summary">
+                  <span>Total reports: {allReports.length}</span>
+                  <span>Average severity: {averageSeverity} / 5</span>
+                </div>
+                <div className="reports-list">
+                  {allReports.map((report) => (
+                    <ReportCard key={report.id} report={report} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Alerts Tab */}
+        {activeTab === 'alerts' && (
+          <div className="tab-content">
+            <h2>Alerts</h2>
+            <p>Reports with severity 4 or 5 - these need attention.</p>
+            {loading ? (
+              <p>Loading...</p>
+            ) : alerts.length === 0 ? (
+              <p>No alerts right now. Air looks fine!</p>
+            ) : (
+              <div className="reports-list">
+                {alerts.map((report) => (
+                  <ReportCard key={report.id} report={report} />
                 ))}
               </div>
             )}

@@ -15,7 +15,9 @@ Opens on `http://localhost:5173`. The backend must be running on
 
 ## Screens
 
-- **Home** - short intro page
+- **Home** - short intro page with three shortcut cards
+- **Air Quality** - every report, with total count and average severity
+- **Alerts** - the reports with severity 4 or 5
 - **Login** - log in with a username and password
 - **Register** - create a new account
 - **Submit Report** - describe the pollution, get your location, set a severity
