@@ -5,21 +5,23 @@ const API_BASE = 'http://localhost:8080/api';
 
 // One card in the report lists
 function ReportCard({ report }) {
+  if (!report) return null;
+
   return (
     <div className="report-card">
       <div className="report-header">
-        <span className={`severity severity-${report.severity}`}>
-          Severity: {report.severity}/5
+        <span className={`severity severity-${report.severity || 3}`}>
+          Severity: {report.severity || 0}/5
         </span>
-        <span className={`status status-${report.status.toLowerCase()}`}>
-          {report.status}
+        <span className={`status status-${(report.status || 'PENDING').toLowerCase()}`}>
+          {report.status || 'PENDING'}
         </span>
       </div>
-      <h3>{report.locationName}</h3>
-      <p>{report.description}</p>
+      <h3>{report.locationName || 'Unknown Location'}</h3>
+      <p>{report.description || 'No description provided'}</p>
       <div className="report-meta">
-        <span>📍 {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}</span>
-        <span>📅 {new Date(report.createdAt).toLocaleString()}</span>
+        <span>📍 {(report.latitude || 0).toFixed(4)}, {(report.longitude || 0).toFixed(4)}</span>
+        <span>📅 {report.createdAt ? new Date(report.createdAt).toLocaleString() : 'Date unknown'}</span>
       </div>
     </div>
   );
@@ -31,33 +33,7 @@ function App() {
   const [reports, setReports] = useState([]);
   const [allReports, setAllReports] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Fetch reports - wrapped in useCallback to avoid infinite loops
-  const fetchReports = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/reports/user/${user.id}`);
-      const data = await response.json();
-      setReports(data);
-    } catch (error) {
-      console.error('Fetch reports error:', error);
-    }
-    setLoading(false);
-  }, [user]);
-
-  // Fetch every report - wrapped in useCallback
-  const fetchAllReports = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/reports`);
-      const data = await response.json();
-      setAllReports(data);
-    } catch (error) {
-      console.error('Fetch all reports error:', error);
-    }
-    setLoading(false);
-  }, []);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Form states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -76,24 +52,54 @@ function App() {
     severity: 3
   });
 
+  // Load user from localStorage once
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Failed to parse saved user', e);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
+  // Fetch personal reports when user, tab, or refreshKey changes
   useEffect(() => {
-    if (user && activeTab === 'reports') {
-      fetchReports();
-    }
-  }, [user, activeTab, fetchReports]);
+    const fetchReports = async () => {
+      if (!user?.id || activeTab !== 'reports') return;
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_BASE}/reports/user/${user.id}`);
+        const data = await response.json();
+        setReports(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Fetch reports error:', error);
+      }
+      setLoading(false);
+    };
 
+    fetchReports();
+  }, [user?.id, activeTab, refreshKey]);
+
+  // Fetch all reports for Air Quality and Alerts tabs
   useEffect(() => {
-    if (activeTab === 'airquality' || activeTab === 'alerts') {
-      fetchAllReports();
-    }
-  }, [activeTab, fetchAllReports]);
+    const fetchAllReports = async () => {
+      if (activeTab !== 'airquality' && activeTab !== 'alerts') return;
+      setLoading(true);
+      try {
+        const response = await fetch(`${API_BASE}/reports`);
+        const data = await response.json();
+        setAllReports(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Fetch all reports error:', error);
+      }
+      setLoading(false);
+    };
+
+    fetchAllReports();
+  }, [activeTab, refreshKey]);
 
   // Login function
   const handleLogin = async (e) => {
@@ -110,6 +116,7 @@ function App() {
         setUser(data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
         alert('Login successful!');
+        setRefreshKey(prev => prev + 1);
         setActiveTab('home');
       } else {
         alert('Login failed');
@@ -169,7 +176,7 @@ function App() {
           locationName: '',
           severity: 3
         });
-        fetchReports();
+        setRefreshKey(prev => prev + 1);
       } else {
         alert('Failed to submit report');
       }
