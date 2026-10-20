@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 const API_BASE = 'http://localhost:8080/api';
@@ -32,6 +32,33 @@ function App() {
   const [allReports, setAllReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch reports - wrapped in useCallback to avoid infinite loops
+  const fetchReports = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/reports/user/${user.id}`);
+      const data = await response.json();
+      setReports(data);
+    } catch (error) {
+      console.error('Fetch reports error:', error);
+    }
+    setLoading(false);
+  }, [user]);
+
+  // Fetch every report - wrapped in useCallback
+  const fetchAllReports = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/reports`);
+      const data = await response.json();
+      setAllReports(data);
+    } catch (error) {
+      console.error('Fetch all reports error:', error);
+    }
+    setLoading(false);
+  }, []);
+
   // Form states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [registerForm, setRegisterForm] = useState({
@@ -60,13 +87,13 @@ function App() {
     if (user && activeTab === 'reports') {
       fetchReports();
     }
-  }, [user, activeTab]);
+  }, [user, activeTab, fetchReports]);
 
   useEffect(() => {
     if (activeTab === 'airquality' || activeTab === 'alerts') {
       fetchAllReports();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchAllReports]);
 
   // Login function
   const handleLogin = async (e) => {
@@ -149,32 +176,6 @@ function App() {
     } catch (error) {
       console.error('Submit report error:', error);
       alert('Error submitting report');
-    }
-    setLoading(false);
-  };
-
-  // Fetch reports
-  const fetchReports = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/reports/user/${user.id}`);
-      const data = await response.json();
-      setReports(data);
-    } catch (error) {
-      console.error('Fetch reports error:', error);
-    }
-    setLoading(false);
-  };
-
-  // Fetch every report (used by the Air Quality and Alerts pages)
-  const fetchAllReports = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/reports`);
-      const data = await response.json();
-      setAllReports(data);
-    } catch (error) {
-      console.error('Fetch all reports error:', error);
     }
     setLoading(false);
   };
