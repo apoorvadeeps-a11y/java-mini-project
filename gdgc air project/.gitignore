@@ -1,5 +1,6 @@
 # Build output
 backend-java/target/
+backend-java/data/
 frontend/node_modules/
 frontend/dist/
 

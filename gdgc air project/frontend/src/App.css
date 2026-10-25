@@ -337,6 +337,241 @@ button.feature-card:hover {
   color: #6b7280;
 }
 
+/* Alert Feature Card */
+.alert-feature-card {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+.alert-feature-card h3 {
+  color: #b91c1c;
+}
+.alert-feature-card:hover {
+  border-color: #ef4444;
+}
+
+/* Alerts Banner */
+.alerts-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #fee2e2;
+}
+
+.alerts-banner h2 {
+  margin-bottom: 0.25rem !important;
+}
+
+.btn-alert-quick {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.btn-alert-quick:hover {
+  background: #b91c1c;
+}
+
+/* Report Emergency Bar */
+.report-emergency-bar {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #fca5a5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.emergency-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-call-mini {
+  background: #dc2626;
+  color: white;
+  text-decoration: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  transition: background 0.2s;
+}
+
+.btn-call-mini:hover {
+  background: #991b1b;
+}
+
+.btn-alert-mini {
+  background: #f97316;
+  color: white;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-alert-mini:hover {
+  background: #c2410c;
+}
+
+/* Severity Hint in Submit Form */
+.severity-alert-hint {
+  background: #fff1f2;
+  border-left: 4px solid #f43f5e;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  color: #881337;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Government Helpline & Alert Tab */
+.subtitle {
+  color: #64748b;
+  margin-top: -1rem;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.helpline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.helpline-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.2s;
+}
+
+.helpline-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.helpline-card.highlight {
+  border-color: #fed7aa;
+  background: #fffbeb;
+}
+
+.helpline-icon {
+  font-size: 2rem;
+}
+
+.helpline-info h3 {
+  font-size: 1.15rem;
+  color: #1e293b;
+  margin-bottom: 0.35rem;
+}
+
+.helpline-info p {
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+
+.helpline-number {
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.btn-call {
+  display: inline-block;
+  text-align: center;
+  background: #059669;
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-call:hover {
+  background: #047857;
+}
+
+.btn-call-emergency {
+  background: #dc2626;
+}
+
+.btn-call-emergency:hover {
+  background: #b91c1c;
+}
+
+/* Alert Dispatch Box */
+.alert-dispatch-box {
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  border-radius: 10px;
+  padding: 1.75rem;
+}
+
+.alert-dispatch-box h3 {
+  color: #991b1b;
+  margin-bottom: 0.5rem;
+}
+
+.alert-dispatch-box p {
+  color: #7f1d1d;
+  font-size: 0.95rem;
+}
+
+.dispatch-success-msg {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: #f0fdf4;
+  border: 2px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.dispatch-success-msg .success-icon {
+  font-size: 2rem;
+}
+
+.dispatch-success-msg h4 {
+  color: #166534;
+  margin-bottom: 0.25rem;
+}
+
+.dispatch-success-msg p {
+  color: #14532d;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
 /* Footer */
 .footer {
   background: #064e3b;

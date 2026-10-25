@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 // One card in the report lists
-function ReportCard({ report }) {
+function ReportCard({ report, onAlertClick }) {
   if (!report) return null;
 
   return (
@@ -23,6 +23,19 @@ function ReportCard({ report }) {
         <span>📍 {(report.latitude || 0).toFixed(4)}, {(report.longitude || 0).toFixed(4)}</span>
         <span>📅 {report.createdAt ? new Date(report.createdAt).toLocaleString() : 'Date unknown'}</span>
       </div>
+      {report.severity >= 4 && (
+        <div className="report-emergency-bar">
+          <span>⚠️ Critical Hazard</span>
+          <div className="emergency-actions">
+            <a href="tel:1916" className="btn-call-mini">📞 Call 1916</a>
+            {onAlertClick && (
+              <button type="button" onClick={() => onAlertClick(report)} className="btn-alert-mini">
+                🚨 Alert Municipal Desk
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -51,6 +64,22 @@ function App() {
     locationName: '',
     severity: 3
   });
+
+  // Emergency / Government Alert state
+  const [dispatchForm, setDispatchForm] = useState({
+    location: '',
+    issueType: 'Garbage / Waste Burning',
+    description: ''
+  });
+  const [dispatchSuccess, setDispatchSuccess] = useState(false);
+  const [dispatchRef, setDispatchRef] = useState('');
+
+  const handleDispatchAlert = (e) => {
+    e.preventDefault();
+    const ref = 'MC-' + Math.floor(100000 + Math.random() * 900000);
+    setDispatchRef(ref);
+    setDispatchSuccess(true);
+  };
 
   // Load user from localStorage once
   useEffect(() => {
@@ -256,6 +285,9 @@ function App() {
         <button onClick={() => setActiveTab('alerts')} className={activeTab === 'alerts' ? 'active' : ''}>
           Alerts
         </button>
+        <button onClick={() => setActiveTab('helpline')} className={activeTab === 'helpline' ? 'active' : ''}>
+          🚨 Govt Alert
+        </button>
         {!user ? (
           <>
             <button onClick={() => setActiveTab('login')} className={activeTab === 'login' ? 'active' : ''}>
@@ -296,6 +328,10 @@ function App() {
               <button className="feature-card" onClick={() => setActiveTab('alerts')}>
                 <h3>🚨 Get Alerts</h3>
                 <p>Reports marked severity 4 or 5</p>
+              </button>
+              <button className="feature-card alert-feature-card" onClick={() => setActiveTab('helpline')}>
+                <h3>🏛️ Alert Govt Services</h3>
+                <p>Municipal toll-free helplines & instant civic dispatch</p>
               </button>
             </div>
           </div>
@@ -425,6 +461,11 @@ function App() {
                   onChange={(e) => setReportForm({ ...reportForm, severity: parseInt(e.target.value) })}
                 />
               </div>
+              {reportForm.severity >= 4 && (
+                <div className="severity-alert-hint">
+                  ⚠️ <strong>Critical pollution level selected!</strong> For urgent civic hazards, you can also alert municipal services directly via the <strong>🚨 Govt Alert</strong> tab or dial <strong>1916</strong>.
+                </div>
+              )}
               <button type="submit" disabled={loading} className="btn-primary">
                 {loading ? 'Submitting...' : 'Submit Report'}
               </button>
@@ -443,7 +484,18 @@ function App() {
             ) : (
               <div className="reports-list">
                 {reports.map((report) => (
-                  <ReportCard key={report.id} report={report} />
+                  <ReportCard
+                    key={report.id}
+                    report={report}
+                    onAlertClick={(rep) => {
+                      setDispatchForm({
+                        location: rep.locationName || '',
+                        issueType: 'Hazardous Pollution (Severity ' + rep.severity + '/5)',
+                        description: rep.description || ''
+                      });
+                      setActiveTab('helpline');
+                    }}
+                  />
                 ))}
               </div>
             )}
@@ -467,7 +519,18 @@ function App() {
                 </div>
                 <div className="reports-list">
                   {allReports.map((report) => (
-                    <ReportCard key={report.id} report={report} />
+                    <ReportCard
+                      key={report.id}
+                      report={report}
+                      onAlertClick={(rep) => {
+                        setDispatchForm({
+                          location: rep.locationName || '',
+                          issueType: 'Hazardous Pollution (Severity ' + rep.severity + '/5)',
+                          description: rep.description || ''
+                        });
+                        setActiveTab('helpline');
+                      }}
+                    />
                   ))}
                 </div>
               </>
@@ -478,8 +541,15 @@ function App() {
         {/* Alerts Tab */}
         {activeTab === 'alerts' && (
           <div className="tab-content">
-            <h2>Alerts</h2>
-            <p>Reports with severity 4 or 5 - these need attention.</p>
+            <div className="alerts-banner">
+              <div>
+                <h2>Alerts</h2>
+                <p>Reports with severity 4 or 5 - these need urgent civic attention.</p>
+              </div>
+              <button onClick={() => setActiveTab('helpline')} className="btn-alert-quick">
+                🚨 Alert Municipal Services
+              </button>
+            </div>
             {loading ? (
               <p>Loading...</p>
             ) : alerts.length === 0 ? (
@@ -487,10 +557,132 @@ function App() {
             ) : (
               <div className="reports-list">
                 {alerts.map((report) => (
-                  <ReportCard key={report.id} report={report} />
+                  <ReportCard
+                    key={report.id}
+                    report={report}
+                    onAlertClick={(rep) => {
+                      setDispatchForm({
+                        location: rep.locationName || '',
+                        issueType: 'Hazardous Pollution (Severity ' + rep.severity + '/5)',
+                        description: rep.description || ''
+                      });
+                      setActiveTab('helpline');
+                    }}
+                  />
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Government & Municipal Alert Tab */}
+        {activeTab === 'helpline' && (
+          <div className="tab-content">
+            <h2>🚨 Alert Government & Municipal Services</h2>
+            <p className="subtitle">
+              Quickly contact municipal authorities, report hazardous air conditions, or dial emergency helplines.
+            </p>
+
+            <div className="helpline-grid">
+              <div className="helpline-card highlight">
+                <div className="helpline-icon">🏛️</div>
+                <div className="helpline-info">
+                  <h3>Municipal Corporation Helpline</h3>
+                  <p>Toll-free helpline for municipal civic issues, waste burning & smog complaints.</p>
+                  <div className="helpline-number">Toll-Free: <strong>1916</strong></div>
+                </div>
+                <a href="tel:1916" className="btn-call">📞 Call 1916</a>
+              </div>
+
+              <div className="helpline-card highlight">
+                <div className="helpline-icon">🏭</div>
+                <div className="helpline-info">
+                  <h3>Pollution Control Board (CPCB)</h3>
+                  <p>National Air Quality Control Room & SAMEER grievance helpline.</p>
+                  <div className="helpline-number">Toll-Free: <strong>1800-180-1817</strong></div>
+                </div>
+                <a href="tel:18001801817" className="btn-call">📞 Call CPCB</a>
+              </div>
+
+              <div className="helpline-card">
+                <div className="helpline-icon">🚒</div>
+                <div className="helpline-info">
+                  <h3>Fire & Hazard Emergency</h3>
+                  <p>For chemical spills, large-scale smoke, factory fires, or toxic emissions.</p>
+                  <div className="helpline-number">Emergency: <strong>101</strong></div>
+                </div>
+                <a href="tel:101" className="btn-call btn-call-emergency">📞 Call 101</a>
+              </div>
+
+              <div className="helpline-card">
+                <div className="helpline-icon">🚨</div>
+                <div className="helpline-info">
+                  <h3>National Emergency (All-in-One)</h3>
+                  <p>Unified emergency response support system (ERSS) across India.</p>
+                  <div className="helpline-number">Emergency: <strong>112</strong></div>
+                </div>
+                <a href="tel:112" className="btn-call btn-call-emergency">📞 Call 112</a>
+              </div>
+            </div>
+
+            {/* Quick Dispatch Form */}
+            <div className="alert-dispatch-box">
+              <h3>⚡ Quick Alert Dispatch to Municipal Desk</h3>
+              <p>Send an immediate incident notification directly to the civic response team.</p>
+              
+              {dispatchSuccess ? (
+                <div className="dispatch-success-msg">
+                  <div className="success-icon">✅</div>
+                  <div>
+                    <h4>Alert Dispatched Successfully!</h4>
+                    <p>Reference Ticket: <strong>#{dispatchRef}</strong></p>
+                    <p>The municipal control center has received this alert for immediate inspection. You can also dial <strong>1916</strong> with this ticket number for instant status.</p>
+                    <button onClick={() => setDispatchSuccess(false)} className="btn-secondary" style={{ marginTop: '0.75rem' }}>
+                      Send Another Alert
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleDispatchAlert} className="form" style={{ marginTop: '1rem', maxWidth: '600px' }}>
+                  <input
+                    type="text"
+                    placeholder="Affected Area / Location (e.g., Sector 15, Near City Park)"
+                    value={dispatchForm.location}
+                    onChange={(e) => setDispatchForm({ ...dispatchForm, location: e.target.value })}
+                    required
+                  />
+                  <select
+                    value={dispatchForm.issueType}
+                    onChange={(e) => setDispatchForm({ ...dispatchForm, issueType: e.target.value })}
+                  >
+                    <option value="Garbage / Waste Burning">🔥 Open Garbage / Waste Burning</option>
+                    <option value="Industrial Toxic Smoke">🏭 Industrial / Factory Toxic Smoke</option>
+                    <option value="Severe Construction Dust">🏗️ Heavy Construction Dust</option>
+                    <option value="Stubble / Biomass Burning">🌾 Stubble / Biomass Burning</option>
+                    <option value="Other Hazardous Air Issue">⚠️ Other Severe Air Hazard</option>
+                  </select>
+                  <textarea
+                    placeholder="Brief description of the urgent issue (e.g. thick black smoke spreading into residential area)..."
+                    rows={3}
+                    value={dispatchForm.description}
+                    onChange={(e) => setDispatchForm({ ...dispatchForm, description: e.target.value })}
+                    required
+                  />
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button type="submit" className="btn-primary" style={{ background: '#b91c1c' }}>
+                      🚨 Dispatch Municipal Alert
+                    </button>
+                    <a
+                      href={`mailto:complaints-cpcb@gov.in?subject=${encodeURIComponent(`Urgent Air Pollution Alert: ${dispatchForm.location || 'Civic Issue'}`)}&body=${encodeURIComponent(`Incident Location: ${dispatchForm.location}\nIssue: ${dispatchForm.issueType}\nDescription: ${dispatchForm.description}`)}`}
+                      className="btn-secondary"
+                      style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      ✉️ Email Authorities
+                    </a>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         )}
       </main>
