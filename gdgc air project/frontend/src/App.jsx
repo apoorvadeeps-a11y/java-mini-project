@@ -148,11 +148,11 @@ function App() {
         setRefreshKey(prev => prev + 1);
         setActiveTab('home');
       } else {
-        alert('Login failed');
+        alert(data.message || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login error');
+      alert('Login error: ' + (error.message || error) + '\nBackend URL: ' + API_BASE);
     }
     setLoading(false);
   };
@@ -172,11 +172,11 @@ function App() {
         alert('Registration successful! Please login.');
         setActiveTab('login');
       } else {
-        alert('Registration failed');
+        alert(data.message || 'Registration failed');
       }
     } catch (error) {
       console.error('Register error:', error);
-      alert('Registration error');
+      alert('Register error: ' + (error.message || error) + '\nBackend URL: ' + API_BASE);
     }
     setLoading(false);
   };
