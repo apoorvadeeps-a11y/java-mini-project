@@ -130,12 +130,29 @@ function App() {
     fetchAllReports();
   }, [activeTab, refreshKey]);
 
+// Helper to prevent getting stuck on Loading... if the server is sleeping or unreachable
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    if (err.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs / 1000}s`);
+    }
+    throw err;
+  }
+}
+
   // Login function
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/users/login`, {
+      const response = await fetchWithTimeout(`${API_BASE}/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginForm)
@@ -162,7 +179,7 @@ function App() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/users/register`, {
+      const response = await fetchWithTimeout(`${API_BASE}/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registerForm)
